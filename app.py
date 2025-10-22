@@ -40,3 +40,21 @@ if uploaded_file is not None:
             for _, row in df.iterrows():
                 folium.CircleMarker(
                     location=[row['latitude'], row['longitude']],
+                    radius=6,
+                    color=cor_irradiacao(row['irradiacao']),
+                    fill=True,
+                    fill_opacity=0.7,
+                    popup=f"Irradiação: {row['irradiacao']} kWh/m²"
+                ).add_to(m)
+
+            # Exibe o mapa
+            st.subheader("🗺️ Mapa de Irradiação Solar")
+            st_folium(m, width=1000, height=600)
+        
+        else:
+            st.error("❌ O CSV deve conter as colunas: latitude, longitude e irradiacao.")
+    except Exception as e:
+        st.error(f"Erro ao ler o arquivo CSV: {e}")
+
+else:
+    st.info("Por favor, faça o upload de um arquivo CSV contendo colunas: latitude, longitude e irradiacao.")
