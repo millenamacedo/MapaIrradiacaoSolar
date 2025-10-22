@@ -23,16 +23,23 @@ if uploaded_file is not None:
 
         if all(col in df.columns for col in ["LON", "LAT", "ANNUAL"]):
 
-            # Corrige coordenadas automaticamente se estiverem fora do intervalo normal
-            if df["LAT"].abs().max() > 90:
-                df["LAT"] = df["LAT"] / 10 if df["LAT"].abs().max() < 900 else df["LAT"] / 100
-            if df["LON"].abs().max() > 180:
-                df["LON"] = df["LON"] / 10 if df["LON"].abs().max() < 1800 else df["LON"] / 100
+            # --- Correção de coordenadas ---
+            def corrigir_coordenada(valor):
+                """Corrige coordenadas que estão com ponto decimal fora do lugar"""
+                if abs(valor) > 180:  # longitude válida é até ±180
+                    # Move ponto decimal uma casa à esquerda
+                    valor = valor / 10
+                    if abs(valor) > 180:
+                        valor = valor / 10
+                return valor
 
-            # Cria o mapa centralizado na média das coordenadas
+            df["LON"] = df["LON"].apply(corrigir_coordenada)
+            df["LAT"] = df["LAT"].apply(corrigir_coordenada)
+
+            # --- Cria o mapa ---
             m = folium.Map(location=[df["LAT"].mean(), df["LON"].mean()], zoom_start=5)
 
-            # Função de cor
+            # Função para definir a cor
             def cor_irradiacao(valor):
                 if valor < 4400:
                     return "blue"
@@ -43,6 +50,7 @@ if uploaded_file is not None:
                 else:
                     return "red"
 
+            # Adiciona marcadores
             for _, row in df.iterrows():
                 folium.CircleMarker(
                     location=[row["LAT"], row["LON"]],
@@ -53,6 +61,7 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
+            # Legenda
             legend_html = '''
             <div style="
                 position: fixed; 
@@ -61,4 +70,23 @@ if uploaded_file is not None:
                 padding: 10px; border-radius: 8px;
             ">
             <b>Legenda - Irradiação (kWh/m²/ano)</b><br>
-            <i style="color:blue;">⬤</i> < 44
+            <i style="color:blue;">⬤</i> < 4400<br>
+            <i style="color:green;">⬤</i> 4400–4549<br>
+            <i style="color:orange;">⬤</i> 4550–4649<br>
+            <i style="color:red;">⬤</i> ≥ 4650<br>
+            </div>
+            '''
+            m.get_root().html.add_child(folium.Element(legend_html))
+
+            # Exibe o mapa
+            st.subheader("🗺️ Mapa de Irradiação Solar (corrigido)")
+            st_folium(m, width=1000, height=600)
+
+            st.success("✅ Coordenadas corrigidas automaticamente!")
+
+        else:
+            st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
+    except Exception as e:
+        st.error(f"Erro ao ler o arquivo CSV: {e}")
+else:
+    st.info("Por favor, faça o upload de um arquivo CSV contendo as colunas: LON, LAT e ANNUAL.")
