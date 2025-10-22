@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import folium
-from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
 
 st.set_page_config(page_title="Mapa de Irradiação Solar", layout="wide")
@@ -26,6 +25,11 @@ if uploaded_file is not None:
 
             # --- Correção de coordenadas ---
             def corrigir_coordenada(valor):
+                try:
+                    # tenta converter para float (caso venha como string)
+                    valor = float(valor)
+                except Exception:
+                    return valor
                 if abs(valor) > 180:
                     valor = valor / 10
                     if abs(valor) > 180:
@@ -38,71 +42,83 @@ if uploaded_file is not None:
             # --- Cria o mapa ---
             m = folium.Map(location=[df["LAT"].mean(), df["LON"].mean()], zoom_start=5)
 
-            # --- Gradiente contínuo com mais cores ---
-            colormap = LinearColormap(
-                colors=[
-                    "#313695",  # azul escuro (valores baixos)
-                    "#4575b4",  # azul médio
-                    "#74add1",  # azul claro
-                    "#abd9e9",  # ciano claro
-                    "#fee090",  # amarelo claro
-                    "#fdae61",  # laranja
-                    "#f46d43",  # vermelho claro
-                    "#d73027",  # vermelho médio
-                    "#a50026"   # vermelho escuro (valores altos)
-                ],
-                vmin=df["ANNUAL"].min(),
-                vmax=df["ANNUAL"].max()
-            )
+            # --- Mapeamento discreto de cores por faixa ---
+            # Regra pedida: azul apenas para valores < 4000; demais faixas abaixo são "equivalentes"
+            def cor_por_faixa(valor):
+                try:
+                    v = float(valor)
+                except Exception:
+                    return "#808080"  # cinza para valores inválidos
+                if v < 4000:
+                    return "#313695"   # azul escuro
+                elif v < 4200:
+                    return "#74add1"   # azul claro / transição
+                elif v < 4400:
+                    return "#fee090"   # amarelo claro
+                elif v < 4600:
+                    return "#fdae61"   # laranja
+                else:
+                    return "#d73027"   # vermelho (valores mais altos)
 
-            # --- Adiciona marcadores ---
+            # --- Adiciona marcadores usando a cor por faixa ---
             for _, row in df.iterrows():
+                color = cor_por_faixa(row["ANNUAL"])
                 folium.CircleMarker(
                     location=[row["LAT"], row["LON"]],
                     radius=6,
-                    color=colormap(row["ANNUAL"]),
+                    color=color,
                     fill=True,
-                    fill_color=colormap(row["ANNUAL"]),
-                    fill_opacity=0.7,
+                    fill_color=color,
+                    fill_opacity=0.8,
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Legenda customizada legível com mais gradientes ---
-            min_val = df["ANNUAL"].min()
-            max_val = df["ANNUAL"].max()
-            steps = 10  # mais divisões para refletir as novas cores
-
-            color_list = [colormap(min_val + i * (max_val - min_val)/steps) for i in range(steps+1)]
-            value_list = [min_val + i * (max_val - min_val)/steps for i in range(steps+1)]
-
+            # --- Legenda personalizada (discreta) ---
             legend_html = '''
             <div style="
-                position: fixed; 
-                bottom: 50px; 
-                left: 50px; 
-                width: 260px; 
-                background-color: white; 
-                border:2px solid grey; 
-                z-index:9999; 
-                font-size:14px; 
-                padding: 10px; 
-                border-radius: 8px; 
+                position: fixed;
+                bottom: 50px;
+                left: 50px;
+                width: 260px;
+                background-color: white;
+                border:2px solid grey;
+                z-index:9999;
+                font-size:14px;
+                padding: 10px;
+                border-radius: 8px;
                 color: black;
                 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
             ">
-            <b>Legenda - Irradiação (kWh/m²/ano)</b><br>
+            <b>Legenda - Irradiação (kWh/m²/ano)</b><br><br>
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
+                <div style="background:#313695;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
+                <div>&lt; 4.000</div>
+            </div>
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
+                <div style="background:#74add1;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
+                <div>4.000 – 4.199</div>
+            </div>
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
+                <div style="background:#fee090;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
+                <div>4.200 – 4.399</div>
+            </div>
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
+                <div style="background:#fdae61;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
+                <div>4.400 – 4.599</div>
+            </div>
+            <div style="display:flex;align-items:center;">
+                <div style="background:#d73027;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
+                <div>&ge; 4.600</div>
+            </div>
+            </div>
             '''
-            for c, v in zip(color_list, value_list):
-                legend_html += f'<div style="background:{c};width:20px;height:20px;display:inline-block;margin-right:5px;"></div> {v:.0f}<br>'
-            legend_html += '</div>'
-
             m.get_root().html.add_child(folium.Element(legend_html))
 
             # --- Exibe o mapa ---
-            st.subheader("🗺️ Mapa de Irradiação Solar (gradiente ajustado e legenda legível)")
+            st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
             st_folium(m, width=1000, height=600)
 
-            st.success("✅ Coordenadas corrigidas automaticamente!")
+            st.success("✅ Visualização atualizada com faixas discretas de cor (azul: <4000).")
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
