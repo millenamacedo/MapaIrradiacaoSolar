@@ -27,7 +27,6 @@ if uploaded_file is not None:
             def corrigir_coordenada(valor):
                 """Corrige coordenadas que estão com ponto decimal fora do lugar"""
                 if abs(valor) > 180:  # longitude válida é até ±180
-                    # Move ponto decimal uma casa à esquerda
                     valor = valor / 10
                     if abs(valor) > 180:
                         valor = valor / 10
@@ -39,18 +38,24 @@ if uploaded_file is not None:
             # --- Cria o mapa ---
             m = folium.Map(location=[df["LAT"].mean(), df["LON"].mean()], zoom_start=5)
 
-            # Função para definir a cor
+            # --- Função para definir cores com mais gradientes ---
             def cor_irradiacao(valor):
-                if valor < 4400:
-                    return "blue"
-                elif 4400 <= valor < 4550:
-                    return "green"
-                elif 4550 <= valor < 4650:
-                    return "orange"
-                else:
-                    return "red"
+                if valor < 3800:
+                    return "#313695"  # azul escuro
+                elif 3800 <= valor < 4100:
+                    return "#4575b4"  # azul
+                elif 4100 <= valor < 4400:
+                    return "#74add1"  # azul claro
+                elif 4400 <= valor < 4700:
+                    return "#fee090"  # amarelo claro
+                elif 4700 <= valor < 5000:
+                    return "#fdae61"  # laranja claro
+                elif 5000 <= valor < 5400:
+                    return "#f46d43"  # laranja
+                else:  # >= 5400
+                    return "#d73027"  # vermelho
 
-            # Adiciona marcadores
+            # --- Adiciona marcadores ---
             for _, row in df.iterrows():
                 folium.CircleMarker(
                     location=[row["LAT"], row["LON"]],
@@ -61,24 +66,27 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # Legenda
+            # --- Legenda ---
             legend_html = '''
             <div style="
                 position: fixed; 
-                bottom: 50px; left: 50px; width: 200px; height: 140px; 
+                bottom: 50px; left: 50px; width: 220px; height: 240px; 
                 background-color: white; border:2px solid grey; z-index:9999; font-size:14px;
                 padding: 10px; border-radius: 8px;
             ">
             <b>Legenda - Irradiação (kWh/m²/ano)</b><br>
-            <i style="color:blue;">⬤</i> < 4400<br>
-            <i style="color:green;">⬤</i> 4400–4549<br>
-            <i style="color:orange;">⬤</i> 4550–4649<br>
-            <i style="color:red;">⬤</i> ≥ 4650<br>
+            <i style="color:#313695;">⬤</i> < 3800<br>
+            <i style="color:#4575b4;">⬤</i> 3800–4099<br>
+            <i style="color:#74add1;">⬤</i> 4100–4399<br>
+            <i style="color:#fee090;">⬤</i> 4400–4699<br>
+            <i style="color:#fdae61;">⬤</i> 4700–4999<br>
+            <i style="color:#f46d43;">⬤</i> 5000–5399<br>
+            <i style="color:#d73027;">⬤</i> ≥ 5400<br>
             </div>
             '''
             m.get_root().html.add_child(folium.Element(legend_html))
 
-            # Exibe o mapa
+            # --- Exibe o mapa ---
             st.subheader("🗺️ Mapa de Irradiação Solar (corrigido)")
             st_folium(m, width=1000, height=600)
 
