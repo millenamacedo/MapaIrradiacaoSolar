@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import folium
-from folium import plugins
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
 
@@ -39,9 +38,9 @@ if uploaded_file is not None:
             # --- Cria o mapa ---
             m = folium.Map(location=[df["LAT"].mean(), df["LON"].mean()], zoom_start=5)
 
-            # --- Gradiente contínuo ajustado ---
+            # --- Gradiente contínuo com mais cores ---
             colormap = LinearColormap(
-                colors=["#313695", "#74add1", "#fee090", "#fdae61", "#f46d43"],
+                colors=["#313695", "#4575b4", "#74add1", "#fee090", "#fdae61", "#f46d43", "#d73027"],
                 vmin=df["ANNUAL"].min(),
                 vmax=df["ANNUAL"].max()
             )
@@ -58,18 +57,21 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Legenda legível com texto preto ---
+            # --- Legenda personalizada com texto preto ---
+            min_val = df["ANNUAL"].min()
+            max_val = df["ANNUAL"].max()
+            mid_val = (min_val + max_val) / 2
             legend_html = f'''
             <div style="
                 position: fixed; 
-                bottom: 50px; left: 50px; width: 200px; height: 140px; 
+                bottom: 50px; left: 50px; width: 220px; height: 150px; 
                 background-color: white; border:2px solid grey; z-index:9999; font-size:14px;
                 padding: 10px; border-radius: 8px; color: black;
             ">
             <b>Legenda - Irradiação (kWh/m²/ano)</b><br>
-            <div style="background:{colormap(df['ANNUAL'].min())};width:20px;height:20px;display:inline-block;"></div> {df['ANNUAL'].min():.0f}<br>
-            <div style="background:{colormap((df['ANNUAL'].min()+df['ANNUAL'].max())/2)};width:20px;height:20px;display:inline-block;"></div> Médio<br>
-            <div style="background:{colormap(df['ANNUAL'].max())};width:20px;height:20px;display:inline-block;"></div> {df['ANNUAL'].max():.0f}<br>
+            <div style="background:{colormap(min_val)};width:20px;height:20px;display:inline-block;"></div> {min_val:.0f}<br>
+            <div style="background:{colormap(mid_val)};width:20px;height:20px;display:inline-block;"></div> Médio ({mid_val:.0f})<br>
+            <div style="background:{colormap(max_val)};width:20px;height:20px;display:inline-block;"></div> {max_val:.0f}<br>
             </div>
             '''
             m.get_root().html.add_child(folium.Element(legend_html))
