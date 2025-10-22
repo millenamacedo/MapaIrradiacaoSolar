@@ -45,7 +45,7 @@ if uploaded_file is not None:
                 vmax=df["ANNUAL"].max()
             )
 
-            # --- Adiciona marcadores com cores do gradiente ---
+            # --- Adiciona marcadores ---
             for _, row in df.iterrows():
                 folium.CircleMarker(
                     location=[row["LAT"], row["LON"]],
@@ -57,23 +57,19 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Legenda personalizada com texto preto ---
+            # --- Legenda customizada legível ---
             min_val = df["ANNUAL"].min()
             max_val = df["ANNUAL"].max()
-            mid_val = (min_val + max_val) / 2
-            legend_html = f'''
-            <div style="
-                position: fixed; 
-                bottom: 50px; left: 50px; width: 220px; height: 150px; 
-                background-color: white; border:2px solid grey; z-index:9999; font-size:14px;
-                padding: 10px; border-radius: 8px; color: black;
-            ">
-            <b>Legenda - Irradiação (kWh/m²/ano)</b><br>
-            <div style="background:{colormap(min_val)};width:20px;height:20px;display:inline-block;"></div> {min_val:.0f}<br>
-            <div style="background:{colormap(mid_val)};width:20px;height:20px;display:inline-block;"></div> Médio ({mid_val:.0f})<br>
-            <div style="background:{colormap(max_val)};width:20px;height:20px;display:inline-block;"></div> {max_val:.0f}<br>
-            </div>
-            '''
+            steps = 6  # número de divisões na legenda
+
+            # lista de cores e valores interpolados
+            color_list = [colormap(min_val + i * (max_val - min_val)/steps) for i in range(steps+1)]
+            value_list = [min_val + i * (max_val - min_val)/steps for i in range(steps+1)]
+
+            legend_html = '<div style="position: fixed; bottom: 50px; left: 50px; width: 240px; background-color: white; border:2px solid grey; z-index:9999; font-size:14px; padding: 10px; border-radius: 8px; color: black;"><b>Legenda - Irradiação (kWh/m²/ano)</b><br>'
+            for c, v in zip(color_list, value_list):
+                legend_html += f'<div style="background:{c};width:20px;height:20px;display:inline-block;"></div> {v:.0f}<br>'
+            legend_html += '</div>'
             m.get_root().html.add_child(folium.Element(legend_html))
 
             # --- Exibe o mapa ---
