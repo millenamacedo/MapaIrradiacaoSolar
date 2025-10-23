@@ -71,38 +71,19 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Exibe legenda como Streamlit ---
+            # --- Legenda simples como texto ---
             st.subheader("📊 Legenda - Irradiação (kWh/m²/ano)")
-            st.markdown("""
-            <div style="font-size:14px; color:black;">
-                <div style="display:flex; align-items:center; margin-bottom:4px;">
-                    <div style="background:#313695; width:24px; height:18px; margin-right:8px;"></div>
-                    <span>&lt; 4.000</span>
-                </div>
-                <div style="display:flex; align-items:center; margin-bottom:4px;">
-                    <div style="background:#74add1; width:24px; height:18px; margin-right:8px;"></div>
-                    <span>4.000 – 4.199</span>
-                </div>
-                <div style="display:flex; align-items:center; margin-bottom:4px;">
-                    <div style="background:#fee090; width:24px; height:18px; margin-right:8px;"></div>
-                    <span>4.200 – 4.399</span>
-                </div>
-                <div style="display:flex; align-items:center; margin-bottom:4px;">
-                    <div style="background:#fdae61; width:24px; height:18px; margin-right:8px;"></div>
-                    <span>4.400 – 4.599</span>
-                </div>
-                <div style="display:flex; align-items:center;">
-                    <div style="background:#d73027; width:24px; height:18px; margin-right:8px;"></div>
-                    <span>&ge; 4.600</span>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.text("Azul escuro  : < 4.000")
+            st.text("Azul claro   : 4.000 – 4.199")
+            st.text("Amarelo claro: 4.200 – 4.399")
+            st.text("Laranja      : 4.400 – 4.599")
+            st.text("Vermelho     : ≥ 4.600")
 
             # --- Exibe o mapa ---
             st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
             st_folium(m, width=1000, height=600)
 
-            st.success("✅ Visualização atualizada com legenda preta via Streamlit.")
+            st.success("✅ Visualização atualizada com legenda simples em texto.")
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
