@@ -71,7 +71,7 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Legenda personalizada (fonte preta e título azul escuro) ---
+            # --- Legenda personalizada com fonte preta garantida ---
             legend_html = '''
             <div style="
                 position: fixed;
@@ -84,28 +84,28 @@ if uploaded_file is not None:
                 font-size:14px;
                 padding: 10px;
                 border-radius: 8px;
-                color: black;  /* Fonte preta */
+                color: black !important;  /* fonte preta garantida */
                 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
             ">
-            <b style="color:#003366;">Legenda - Irradiação (kWh/m²/ano)</b><br><br>
+            <b style="color:#003366 !important;">Legenda - Irradiação (kWh/m²/ano)</b><br><br>
 
-            <div style="display:flex;align-items:center;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;margin-bottom:6px;color:black !important;">
                 <div style="background:#313695;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
                 <div>&lt; 4.000</div>
             </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;margin-bottom:6px;color:black !important;">
                 <div style="background:#74add1;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
                 <div>4.000 – 4.199</div>
             </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;margin-bottom:6px;color:black !important;">
                 <div style="background:#fee090;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
                 <div>4.200 – 4.399</div>
             </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;margin-bottom:6px;color:black !important;">
                 <div style="background:#fdae61;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
                 <div>4.400 – 4.599</div>
             </div>
-            <div style="display:flex;align-items:center;">
+            <div style="display:flex;align-items:center;color:black !important;">
                 <div style="background:#d73027;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
                 <div>&ge; 4.600</div>
             </div>
@@ -117,7 +117,7 @@ if uploaded_file is not None:
             st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
             st_folium(m, width=1000, height=600)
 
-            st.success("✅ Visualização atualizada com fonte preta e título azul na legenda.")
+            st.success("✅ Visualização atualizada com fonte preta na legenda.")
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
