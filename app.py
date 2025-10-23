@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import folium
 from streamlit_folium import st_folium
-from branca.element import Template, MacroElement
 
 st.set_page_config(page_title="Mapa de Irradiação Solar", layout="wide")
 st.title("☀️ Mapa Interativo - Irradiação Solar Anual")
@@ -72,68 +71,38 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Legenda garantida com fonte preta usando MacroElement ---
-            template = """
-            {% macro html(this, kwargs) %}
-            <style>
-                .legend-container {
-                    position: fixed;
-                    bottom: 50px;
-                    left: 50px;
-                    width: 260px;
-                    background-color: white;
-                    border:2px solid grey;
-                    z-index:9999;
-                    font-size:14px;
-                    padding: 10px;
-                    border-radius: 8px;
-                    color: black;
-                    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-                }
-                .legend-container b {
-                    color: black;  /* título preto */
-                }
-                .legend-container div span {
-                    color: black;  /* labels pretas */
-                }
-            </style>
-
-            <div class="legend-container">
-            <b>Legenda - Irradiação (kWh/m²/ano)</b><br><br>
-
-            <div style="display:flex;align-items:center;margin-bottom:6px;">
-                <div style="background:#313695;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <span>&lt; 4.000</span>
+            # --- Exibe legenda como Streamlit ---
+            st.subheader("📊 Legenda - Irradiação (kWh/m²/ano)")
+            st.markdown("""
+            <div style="font-size:14px; color:black;">
+                <div style="display:flex; align-items:center; margin-bottom:4px;">
+                    <div style="background:#313695; width:24px; height:18px; margin-right:8px;"></div>
+                    <span>&lt; 4.000</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:4px;">
+                    <div style="background:#74add1; width:24px; height:18px; margin-right:8px;"></div>
+                    <span>4.000 – 4.199</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:4px;">
+                    <div style="background:#fee090; width:24px; height:18px; margin-right:8px;"></div>
+                    <span>4.200 – 4.399</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-bottom:4px;">
+                    <div style="background:#fdae61; width:24px; height:18px; margin-right:8px;"></div>
+                    <span>4.400 – 4.599</span>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <div style="background:#d73027; width:24px; height:18px; margin-right:8px;"></div>
+                    <span>&ge; 4.600</span>
+                </div>
             </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;">
-                <div style="background:#74add1;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <span>4.000 – 4.199</span>
-            </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;">
-                <div style="background:#fee090;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <span>4.200 – 4.399</span>
-            </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;">
-                <div style="background:#fdae61;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <span>4.400 – 4.599</span>
-            </div>
-            <div style="display:flex;align-items:center;">
-                <div style="background:#d73027;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <span>&ge; 4.600</span>
-            </div>
-            </div>
-
-            {% endmacro %}
-            """
-            macro = MacroElement()
-            macro._template = Template(template)
-            m.get_root().add_child(macro)
+            """, unsafe_allow_html=True)
 
             # --- Exibe o mapa ---
             st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
             st_folium(m, width=1000, height=600)
 
-            st.success("✅ Visualização atualizada com fonte preta na legenda.")
+            st.success("✅ Visualização atualizada com legenda preta via Streamlit.")
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
