@@ -84,30 +84,29 @@ if uploaded_file is not None:
                 font-size:14px;
                 padding: 10px;
                 border-radius: 8px;
-                color: black !important;  /* fonte preta garantida */
                 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
             ">
-            <b style="color:#003366 !important;">Legenda - Irradiação (kWh/m²/ano)</b><br><br>
+            <b style="color:#003366;">Legenda - Irradiação (kWh/m²/ano)</b><br><br>
 
-            <div style="display:flex;align-items:center;margin-bottom:6px;color:black !important;">
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
                 <div style="background:#313695;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <div>&lt; 4.000</div>
+                <span style="color:black;">&lt; 4.000</span>
             </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;color:black !important;">
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
                 <div style="background:#74add1;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <div>4.000 – 4.199</div>
+                <span style="color:black;">4.000 – 4.199</span>
             </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;color:black !important;">
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
                 <div style="background:#fee090;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <div>4.200 – 4.399</div>
+                <span style="color:black;">4.200 – 4.399</span>
             </div>
-            <div style="display:flex;align-items:center;margin-bottom:6px;color:black !important;">
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
                 <div style="background:#fdae61;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <div>4.400 – 4.599</div>
+                <span style="color:black;">4.400 – 4.599</span>
             </div>
-            <div style="display:flex;align-items:center;color:black !important;">
+            <div style="display:flex;align-items:center;">
                 <div style="background:#d73027;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
-                <div>&ge; 4.600</div>
+                <span style="color:black;">&ge; 4.600</span>
             </div>
             </div>
             '''
