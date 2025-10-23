@@ -16,6 +16,7 @@ uploaded_file = st.file_uploader("📂 Faça upload do arquivo CSV", type=["csv"
 
 if uploaded_file is not None:
     try:
+        # Tenta ler o CSV, detectando o separador automaticamente
         df = pd.read_csv(uploaded_file, sep=None, engine="python")
 
         st.subheader("📋 Pré-visualização dos Dados")
@@ -25,10 +26,12 @@ if uploaded_file is not None:
 
             # --- Correção de coordenadas ---
             def corrigir_coordenada(valor):
+                """Normaliza as coordenadas (latitude ou longitude) se estiverem fora do intervalo [-180, 180]."""
                 try:
                     valor = float(valor)
                 except Exception:
-                    return valor
+                    # Retorna o valor original se não for um número (Folium irá ignorar)
+                    return valor 
                 if abs(valor) > 180:
                     valor = valor / 10
                     if abs(valor) > 180:
@@ -38,27 +41,28 @@ if uploaded_file is not None:
             df["LON"] = df["LON"].apply(corrigir_coordenada)
             df["LAT"] = df["LAT"].apply(corrigir_coordenada)
 
-            # --- Cria o mapa ---
+            # --- Cria o mapa (cálculo do centroide para iniciar o zoom) ---
             m = folium.Map(location=[df["LAT"].mean(), df["LON"].mean()], zoom_start=5)
 
             # --- Mapeamento discreto de cores por faixa ---
             def cor_por_faixa(valor):
+                """Define a cor do marcador com base no valor de irradiação anual (ANNUAL)."""
                 try:
                     v = float(valor)
                 except Exception:
                     return "#808080"  # cinza para valores inválidos
                 if v < 4000:
-                    return "#313695"   # azul escuro
+                    return "#313695"    # azul escuro (< 4000)
                 elif v < 4200:
-                    return "#74add1"   # azul claro / transição
+                    return "#74add1"    # azul claro / transição (4000 - 4199)
                 elif v < 4400:
-                    return "#fee090"   # amarelo claro
+                    return "#fee090"    # amarelo claro (4200 - 4399)
                 elif v < 4600:
-                    return "#fdae61"   # laranja
+                    return "#fdae61"    # laranja (4400 - 4599)
                 else:
-                    return "#d73027"   # vermelho (valores mais altos)
+                    return "#d73027"    # vermelho (>= 4600)
 
-            # --- Adiciona marcadores ---
+            # --- Adiciona marcadores ao mapa ---
             for _, row in df.iterrows():
                 color = cor_por_faixa(row["ANNUAL"])
                 folium.CircleMarker(
@@ -71,19 +75,13 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Legenda simples como texto ---
-            st.subheader("📊 Legenda - Irradiação (kWh/m²/ano)")
-            st.text("Azul escuro  : < 4.000")
-            st.text("Azul claro   : 4.000 – 4.199")
-            st.text("Amarelo claro: 4.200 – 4.399")
-            st.text("Laranja      : 4.400 – 4.599")
-            st.text("Vermelho     : ≥ 4.600")
+            # --- LINHAS DE LEGENDA REMOVIDAS ---
 
             # --- Exibe o mapa ---
             st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
             st_folium(m, width=1000, height=600)
 
-            st.success("✅ Visualização atualizada com legenda simples em texto.")
+            st.success("✅ Visualização atualizada. A legenda em texto foi removida.")
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
