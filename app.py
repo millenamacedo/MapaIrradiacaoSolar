@@ -75,13 +75,7 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- LINHAS DE LEGENDA REMOVIDAS ANTERIORMENTE ---
-
-            # --- Exibe o mapa ---
-            st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
-            st_folium(m, width=1000, height=600)
-
-            # --- Adiciona a Legenda como Tabela ---
+            # --- Adiciona a Legenda como Tabela (MOVIDO PARA CIMA E AJUSTADO PARA st.table) ---
             legend_data = {
                 "Faixa de Irradiação (kWh/m²/ano)": [
                     "< 4.000",
@@ -90,20 +84,26 @@ if uploaded_file is not None:
                     "4.400 – 4.599",
                     "≥ 4.600"
                 ],
-                "Cor": [
-                    "Azul Escuro",
-                    "Azul Claro",
-                    "Amarelo Claro",
-                    "Laranja",
-                    "Vermelho"
+                "Cor (Hex)": [
+                    "Azul Escuro (#313695)",
+                    "Azul Claro (#74add1)",
+                    "Amarelo Claro (#fee090)",
+                    "Laranja (#fdae61)",
+                    "Vermelho (#d73027)"
                 ]
             }
             legend_df = pd.DataFrame(legend_data)
 
             st.subheader("📊 Legenda de Cores")
-            st.dataframe(legend_df, hide_index=True)
+            # Usando st.table para uma exibição mais simples e garantida
+            st.table(legend_df) 
 
-            st.success("✅ Visualização atualizada com o mapa e a legenda em formato de tabela.")
+
+            # --- Exibe o mapa ---
+            st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
+            st_folium(m, width=1000, height=600)
+
+            st.success("✅ Visualização atualizada com a legenda em formato de tabela acima do mapa.")
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
