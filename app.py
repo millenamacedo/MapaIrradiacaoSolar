@@ -3,7 +3,8 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 # Importado para injetar HTML customizado (legenda) no mapa Folium
-from branca.element import Element
+# Removido o import 'Element' de branca.element pois não será mais usado
+# from branca.element import Element
 
 st.set_page_config(page_title="Mapa de Irradiação Solar", layout="wide")
 st.title("☀️ Mapa Interativo - Irradiação Solar Anual")
@@ -77,29 +78,34 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Adiciona Legenda ao Mapa (HTML/CSS) ---
-            # Define o estilo e o conteúdo da legenda em HTML
-            legend_html = """
-                 <div style="position: fixed; 
-                     bottom: 50px; left: 50px; width: 220px; max-height: 200px;
-                     border:2px solid grey; z-index:9999; font-size:14px;
-                     background-color: white; opacity: 0.9; padding: 10px; border-radius: 8px;">
-                   &nbsp; <b>Irradiação Solar (kWh/m²/ano)</b> <br>
-                   &nbsp; <i style="background:#313695; color:transparent; border-radius: 50%; width:10px; height:10px; display:inline-block; margin: 3px 0;">.</i> < 4.000 <br>
-                   &nbsp; <i style="background:#74add1; color:transparent; border-radius: 50%; width:10px; height:10px; display:inline-block; margin: 3px 0;">.</i> 4.000 – 4.199 <br>
-                   &nbsp; <i style="background:#fee090; color:transparent; border-radius: 50%; width:10px; height:10px; display:inline-block; margin: 3px 0;">.</i> 4.200 – 4.399 <br>
-                   &nbsp; <i style="background:#fdae61; color:transparent; border-radius: 50%; width:10px; height:10px; display:inline-block; margin: 3px 0;">.</i> 4.400 – 4.599 <br>
-                   &nbsp; <i style="background:#d73027; color:transparent; border-radius: 50%; width:10px; height:10px; display:inline-block; margin: 3px 0;">.</i> ≥ 4.600
-                </div>
-            """
-            
-            # Adiciona o elemento HTML ao mapa
-            m.get_root().add_child(Element(legend_html))
+            # --- Adiciona a Legenda como Tabela (Acima do mapa) ---
+            legend_data = {
+                "Faixa de Irradiação (kWh/m²/ano)": [
+                    "< 4.000",
+                    "4.000 – 4.199",
+                    "4.200 – 4.399",
+                    "4.400 – 4.599",
+                    "≥ 4.600"
+                ],
+                "Cor": [
+                    "Azul Escuro",
+                    "Azul Claro",
+                    "Amarelo Claro",
+                    "Laranja",
+                    "Vermelho"
+                ]
+            }
+            legend_df = pd.DataFrame(legend_data)
+
+            st.subheader("📊 Legenda de Cores")
+            # Usa st.table para exibição clara da legenda
+            st.table(legend_df) 
 
 
             # --- Exibe o mapa ---
-            st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
+            st.subheader("🗺️ Mapa de Irradiação Solar")
             st_folium(m, width=1000, height=600)
+
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
