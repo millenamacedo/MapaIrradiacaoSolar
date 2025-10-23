@@ -100,10 +100,8 @@ if uploaded_file is not None:
             m.get_root().html.add_child(folium.Element(legend_html))
 
             # --- Exibe o mapa ---
-            st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
+            st.subheader("🗺️ Mapa de Irradiação Solar")
             st_folium(m, width=1000, height=600)
-
-            st.success("✅ Visualização atualizada com fonte preta e título azul na legenda.")
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
