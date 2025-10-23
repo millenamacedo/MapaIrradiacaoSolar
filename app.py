@@ -4,7 +4,7 @@ import folium
 from streamlit_folium import st_folium
 
 st.set_page_config(page_title="Mapa de Irradiação Solar", layout="wide")
-st.title("☀️ Mapa Interativo - Irradiação Solar Anual")
+st.title("☀️ Mapa muito Interativo - Irradiação Solar Anual")
 
 st.write("""
 Este aplicativo exibe um mapa interativo com os níveis de irradiação solar anual, 
