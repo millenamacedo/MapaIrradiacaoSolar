@@ -26,7 +26,6 @@ if uploaded_file is not None:
             # --- Correção de coordenadas ---
             def corrigir_coordenada(valor):
                 try:
-                    # tenta converter para float (caso venha como string)
                     valor = float(valor)
                 except Exception:
                     return valor
@@ -43,7 +42,6 @@ if uploaded_file is not None:
             m = folium.Map(location=[df["LAT"].mean(), df["LON"].mean()], zoom_start=5)
 
             # --- Mapeamento discreto de cores por faixa ---
-            # Regra pedida: azul apenas para valores < 4000; demais faixas abaixo são "equivalentes"
             def cor_por_faixa(valor):
                 try:
                     v = float(valor)
@@ -60,7 +58,7 @@ if uploaded_file is not None:
                 else:
                     return "#d73027"   # vermelho (valores mais altos)
 
-            # --- Adiciona marcadores usando a cor por faixa ---
+            # --- Adiciona marcadores ---
             for _, row in df.iterrows():
                 color = cor_por_faixa(row["ANNUAL"])
                 folium.CircleMarker(
@@ -73,7 +71,7 @@ if uploaded_file is not None:
                     popup=f"Irradiação: {row['ANNUAL']} kWh/m²/ano"
                 ).add_to(m)
 
-            # --- Legenda personalizada (discreta) ---
+            # --- Legenda personalizada (fonte preta e título azul escuro) ---
             legend_html = '''
             <div style="
                 position: fixed;
@@ -86,10 +84,11 @@ if uploaded_file is not None:
                 font-size:14px;
                 padding: 10px;
                 border-radius: 8px;
-                color: black;
+                color: black;  /* Fonte preta */
                 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
             ">
-            <b>Legenda - Irradiação (kWh/m²/ano)</b><br><br>
+            <b style="color:#003366;">Legenda - Irradiação (kWh/m²/ano)</b><br><br>
+
             <div style="display:flex;align-items:center;margin-bottom:6px;">
                 <div style="background:#313695;width:24px;height:18px;margin-right:8px;border-radius:3px;"></div>
                 <div>&lt; 4.000</div>
@@ -118,7 +117,7 @@ if uploaded_file is not None:
             st.subheader("🗺️ Mapa de Irradiação Solar (faixas discretas)")
             st_folium(m, width=1000, height=600)
 
-            st.success("✅ Visualização atualizada com faixas discretas de cor (azul: <4000).")
+            st.success("✅ Visualização atualizada com fonte preta e título azul na legenda.")
 
         else:
             st.error("❌ O CSV deve conter as colunas: LON, LAT e ANNUAL.")
